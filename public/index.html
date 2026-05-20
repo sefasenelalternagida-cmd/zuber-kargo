@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zuber Kargo Rapor</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f3f0;
+    --surface: #ffffff;
+    --border: #e2e0db;
+    --border-strong: #c8c5be;
+    --text: #1a1917;
+    --text-muted: #6b6860;
+    --accent: #2563eb;
+    --accent-light: #eff6ff;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --orange: #ea580c;
+    --orange-light: #fff7ed;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --yellow: #ca8a04;
+    --yellow-light: #fefce8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .header-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .header-sep { color: var(--border-strong); margin: 0 4px; }
+
+  /* SETUP SCREEN */
+  #setup-screen {
+    max-width: 520px;
+    margin: 80px auto;
+    padding: 0 24px;
+  }
+  .setup-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+  }
+  .setup-card h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .setup-card p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+  .field-group { margin-bottom: 20px; }
+  .field-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .field-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field-group input:focus { border-color: var(--accent); background: white; }
+  .field-group .hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* MAIN APP */
+  #main-app { display: none; }
+
+  .toolbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 280px;
+    position: relative;
+  }
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 9px 12px 9px 38px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .search-box input:focus { border-color: var(--accent); background: white; }
+
+  .filter-select {
+    padding: 9px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    min-width: 140px;
+  }
+  .filter-select:focus { border-color: var(--accent); background: white; }
+
+  .btn-load {
+    padding: 9px 18px;
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-load:hover { opacity: 0.85; }
+  .btn-load:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-settings {
+    padding: 9px 14px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-settings:hover { background: var(--bg); color: var(--text); }
+
+  /* STATS */
+  .stats-bar {
+    padding: 16px 32px;
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-wrap: wrap;
+  }
+  .stat-item { display: flex; align-items: center; gap: 8px; }
+  .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; }
+  .stat-sep { width: 1px; height: 20px; background: var(--border); }
+
+  /* TABLE */
+  .table-container {
+    padding: 0;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    white-space: nowrap;
+    position: sticky;
+    top: 56px;
+    z-index: 10;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+  tbody tr:hover { background: #faf9f7; }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 13px 16px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .td-order {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .td-order:hover { text-decoration: underline; }
+
+  .td-customer { font-weight: 500; }
+  .td-company { color: var(--text-muted); font-size: 12px; }
+
+  .td-amount {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .td-date { color: var(--text-muted); font-size: 12px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-orange { background: var(--orange-light); color: var(--orange); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
+  .badge-gray { background: #f3f4f6; color: #6b7280; }
+
+  .location-cell { display: flex; flex-direction: column; gap: 2px; }
+  .loc-primary { font-weight: 500; }
+  .loc-secondary { font-size: 11px; color: var(--text-muted); }
+
+  /* EMPTY / LOADING / ERROR */
+  .state-container {
+    padding: 80px 32px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .state-icon { font-size: 40px; margin-bottom: 16px; }
+  .state-title { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+  .state-msg { font-size: 14px; line-height: 1.6; }
+
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .spinner-dark {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--text);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    width: 240px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 16px auto 0;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--text);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* PAGINATION */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .pagination-btns { display: flex; gap: 8px; }
+  .btn-page {
+    padding: 6px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-page:hover:not(:disabled) { background: var(--text); color: white; border-color: var(--text); }
+  .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+  .modal .field-group { margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .btn-secondary {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  /* HIGHLIGHT */
+  mark {
+    background: #fef08a;
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+
+  .results-info {
+    padding: 10px 32px;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">📦</div>
+  <span class="header-title">Zuber Kargo Rapor</span>
+</div>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <h2>Bağlantı Ayarları</h2>
+    <p>Shopify mağaza bilgilerini girerek siparişlerinize erişin. Bilgiler tarayıcınızda şifreli olarak saklanır.</p>
+    <div class="field-group">
+      <label>Mağaza Adresi</label>
+      <input type="text" id="store-input" placeholder="magazaadi.myshopify.com" />
+      <div class="hint">Sadece subdomain kısmını girin</div>
+    </div>
+    <div class="field-group">
+      <label>Admin API Access Token</label>
+      <input type="password" id="token-input" placeholder="shpss_..." />
+      <div class="hint">Settings → Apps → Develop apps → token</div>
+    </div>
+    <button class="btn-primary" id="save-btn" onclick="saveSettings()">Bağlan ve Başla</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app">
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="search-input" placeholder="Sipariş no, müşteri, firma, vergi no, il, ilçe, mahalle..." oninput="filterOrders()" />
+    </div>
+    <select class="filter-select" id="payment-filter" onchange="filterOrders()">
+      <option value="">Tüm Ödemeler</option>
+      <option value="paid">Ödendi</option>
+      <option value="pending">Bekliyor</option>
+      <option value="refunded">İade</option>
+      <option value="voided">İptal</option>
+    </select>
+    <select class="filter-select" id="fulfillment-filter" onchange="filterOrders()">
+      <option value="">Tüm Kargo</option>
+      <option value="unfulfilled">Gönderilmedi</option>
+      <option value="fulfilled">Gönderildi</option>
+      <option value="partial">Kısmi</option>
+    </select>
+    <button class="btn-load" id="load-btn" onclick="loadAllOrders()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/>
+      </svg>
+      Siparişleri Yükle
+    </button>
+    <button class="btn-settings" onclick="openSettings()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.07 4.93a10 10 0 0 1 1.8 2.26L19 9a7 7 0 0 0-1-1.73L19.07 4.93ZM4.93 4.93 7 7.27A7 7 0 0 0 6 9l-1.87-1.81a10 10 0 0 1 1.8-2.26ZM4.93 19.07a10 10 0 0 1-1.8-2.26L5 15a7 7 0 0 0 1 1.73L4.93 19.07Zm14.14 0L17 16.73A7 7 0 0 0 18 15l1.87 1.81a10 10 0 0 1-1.8 2.26Z"/>
+      </svg>
+      Ayarlar
+    </button>
+  </div>
+
+  <div id="stats-bar" class="stats-bar" style="display:none">
+    <div class="stat-item">
+      <span class="stat-label">Toplam Sipariş</span>
+      <span class="stat-value" id="stat-total">0</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+      <span class="stat-label">Gösterilen</span>
+      <span class="stat-value" id="stat-shown">0</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+      <span class="stat-label">Toplam Tutar</span>
+      <span class="stat-value" id="stat-amount">₺0</span>
+    </div>
+  </div>
+
+  <div id="results-info" class="results-info" style="display:none"></div>
+
+  <div class="table-container">
+    <div id="table-state" class="state-container">
+      <div class="state-icon">📋</div>
+      <div class="state-title">Siparişler Yüklenmedi</div>
+      <div class="state-msg">"Siparişleri Yükle" butonuna tıklayarak<br>tüm siparişleri çekin.</div>
+    </div>
+    <table id="orders-table" style="display:none">
+      <thead>
+        <tr>
+          <th>Sipariş No</th>
+          <th>Tarih</th>
+          <th>Müşteri</th>
+          <th>Firma</th>
+          <th>Vergi No</th>
+          <th>İl (Teslimat)</th>
+          <th>İlçe (Teslimat)</th>
+          <th>Mahalle</th>
+          <th>Fatura İl</th>
+          <th>Fatura İlçe</th>
+          <th>Ödeme</th>
+          <th>Kargo</th>
+          <th style="text-align:right">Tutar</th>
+        </tr>
+      </thead>
+      <tbody id="orders-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="pagination" class="pagination" style="display:none">
+    <span id="page-info"></span>
+    <div class="pagination-btns">
+      <button class="btn-page" id="prev-btn" onclick="changePage(-1)">← Önceki</button>
+      <button class="btn-page" id="next-btn" onclick="changePage(1)">Sonraki →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <h3>⚙️ Bağlantı Ayarları</h3>
+    <div class="field-group">
+      <label>Mağaza Adresi</label>
+      <input type="text" id="modal-store" placeholder="magazaadi.myshopify.com" />
+    </div>
+    <div class="field-group">
+      <label>Admin API Access Token</label>
+      <input type="password" id="modal-token" placeholder="shpss_..." />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSettings()">İptal</button>
+      <button class="btn-primary" style="flex:1" onclick="updateSettings()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROXY = 'https://api.anthropic.com/v1/messages'; // not used, direct shopify
+const PAGE_SIZE = 50;
+
+let allOrders = [];
+let filteredOrders = [];
+let currentPage = 1;
+let shopStore = '';
+let shopToken = '';
+
+// ---- INIT ----
+function init() {
+  const store = localStorage.getItem('zk_store');
+  const token = localStorage.getItem('zk_token');
+  if (store && token) {
+    shopStore = store;
+    shopToken = token;
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+  } else {
+    document.getElementById('setup-screen').style.display = 'block';
+    document.getElementById('main-app').style.display = 'none';
+  }
+}
+
+function saveSettings() {
+  const store = document.getElementById('store-input').value.trim();
+  const token = document.getElementById('token-input').value.trim();
+  if (!store || !token) { alert('Lütfen tüm alanları doldurun.'); return; }
+  const cleanStore = store.replace(/https?:\/\//, '').replace(/\/$/, '');
+  localStorage.setItem('zk_store', cleanStore);
+  localStorage.setItem('zk_token', token);
+  shopStore = cleanStore;
+  shopToken = token;
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+}
+
+function openSettings() {
+  document.getElementById('modal-store').value = shopStore;
+  document.getElementById('modal-token').value = shopToken;
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settings-modal').classList.remove('open');
+}
+function updateSettings() {
+  const store = document.getElementById('modal-store').value.trim();
+  const token = document.getElementById('modal-token').value.trim();
+  if (!store || !token) { alert('Lütfen tüm alanları doldurun.'); return; }
+  const cleanStore = store.replace(/https?:\/\//, '').replace(/\/$/, '');
+  localStorage.setItem('zk_store', cleanStore);
+  localStorage.setItem('zk_token', token);
+  shopStore = cleanStore;
+  shopToken = token;
+  closeSettings();
+  allOrders = [];
+  filteredOrders = [];
+  resetTableState();
+}
+
+function resetTableState() {
+  document.getElementById('orders-table').style.display = 'none';
+  document.getElementById('table-state').style.display = 'block';
+  document.getElementById('table-state').innerHTML = `
+    <div class="state-icon">📋</div>
+    <div class="state-title">Siparişler Yüklenmedi</div>
+    <div class="state-msg">"Siparişleri Yükle" butonuna tıklayarak<br>tüm siparişleri çekin.</div>
+  `;
+  document.getElementById('stats-bar').style.display = 'none';
+  document.getElementById('pagination').style.display = 'none';
+  document.getElementById('results-info').style.display = 'none';
+}
+
+// ---- LOAD ORDERS via GraphQL ----
+const METAFIELD_KEYS = [
+  { namespace: 'zuber_checkout', key: 'billing_type' },
+  { namespace: 'zuber_checkout', key: 'billing_name' },
+  { namespace: 'zuber_checkout', key: 'billing_province' },
+  { namespace: 'zuber_checkout', key: 'billing_district' },
+  { namespace: 'zuber_checkout', key: 'billing_address' },
+  { namespace: 'zuber_checkout', key: 'billing_neighborhood' },
+  { namespace: 'zuber_checkout', key: 'billing_company_name' },
+  { namespace: 'zuber_checkout', key: 'billing_tax_office' },
+  { namespace: 'zuber_checkout', key: 'billing_tax_number' },
+  { namespace: 'zuber_checkout', key: 'custom_app_province' },
+  { namespace: 'zuber_checkout', key: 'custom_app_district' },
+  { namespace: 'zuber_checkout', key: 'custom_app_neighborhood' },
+  { namespace: 'zuber_checkout', key: 'personal_address' },
+  { namespace: 'zuber_checkout', key: 'company_billing_street_address' },
+];
+
+function buildMetafieldFragment() {
+  return METAFIELD_KEYS.map(m =>
+    `${m.namespace}_${m.key}: metafield(namespace: "${m.namespace}", key: "${m.key}") { value }`
+  ).join('\n');
+}
+
+async function shopifyGQL(query, variables = {}) {
+  const res = await fetch('/api/shopify', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-shopify-store': shopStore,
+      'x-shopify-token': shopToken,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  const data = await res.json();
+  if (data.errors) throw new Error(data.errors[0].message);
+  return data.data;
+}
+
+async function loadAllOrders() {
+  const btn = document.getElementById('load-btn');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Yükleniyor...`;
+
+  allOrders = [];
+  document.getElementById('orders-table').style.display = 'none';
+  document.getElementById('stats-bar').style.display = 'none';
+  document.getElementById('pagination').style.display = 'none';
+  document.getElementById('results-info').style.display = 'none';
+  document.getElementById('table-state').style.display = 'block';
+  document.getElementById('table-state').innerHTML = `
+    <div class="spinner-dark"></div>
+    <div class="state-title">Siparişler Yükleniyor...</div>
+    <div class="state-msg" id="load-progress-text">Veriler çekiliyor...</div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:5%"></div></div>
+  `;
+
+  try {
+    let cursor = null;
+    let hasNext = true;
+    let batch = 0;
+
+    while (hasNext) {
+      const query = `
+        query GetOrders($cursor: String) {
+          orders(first: 50, after: $cursor, sortKey: CREATED_AT, reverse: true) {
+            pageInfo { hasNextPage endCursor }
+            edges {
+              node {
+                id
+                name
+                createdAt
+                displayFinancialStatus
+                displayFulfillmentStatus
+                totalPriceSet { shopMoney { amount currencyCode } }
+                customer { firstName lastName email phone }
+                shippingAddress { city province address1 zip }
+                ${buildMetafieldFragment()}
+              }
+            }
+          }
+        }
+      `;
+
+      const data = await shopifyGQL(query, { cursor });
+      const edges = data.orders.edges;
+      const pageInfo = data.orders.pageInfo;
+
+      for (const edge of edges) {
+        allOrders.push(parseOrder(edge.node));
+      }
+
+      batch++;
+      hasNext = pageInfo.hasNextPage;
+      cursor = pageInfo.endCursor;
+
+      const progressText = document.getElementById('load-progress-text');
+      const progressFill = document.getElementById('progress-fill');
+      if (progressText) {
+        progressText.textContent = `${allOrders.length} sipariş yüklendi...`;
+        // Pulse the bar since we don't know total
+        const pct = Math.min(5 + batch * 8, 90);
+        if (progressFill) progressFill.style.width = pct + '%';
+      }
+
+      // Small delay to avoid rate limiting
+      if (hasNext) await new Promise(r => setTimeout(r, 200));
+    }
+
+    if (document.getElementById('progress-fill'))
+      document.getElementById('progress-fill').style.width = '100%';
+
+    await new Promise(r => setTimeout(r, 300));
+
+    filterOrders();
+    document.getElementById('stats-bar').style.display = 'flex';
+    document.getElementById('stat-total').textContent = allOrders.length;
+
+  } catch (err) {
+    document.getElementById('table-state').innerHTML = `
+      <div class="state-icon">⚠️</div>
+      <div class="state-title">Hata Oluştu</div>
+      <div class="state-msg">${err.message}<br><br>Token veya mağaza adınızı kontrol edin.</div>
+    `;
+    console.error(err);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/>
+    </svg>
+    Yenile`;
+}
+
+function getMF(node, namespace, key) {
+  const k = `${namespace}_${key}`;
+  return node[k]?.value || '';
+}
+
+function parseOrder(node) {
+  return {
+    id: node.id,
+    name: node.name,
+    createdAt: node.createdAt,
+    paymentStatus: node.displayFinancialStatus,
+    fulfillmentStatus: node.displayFulfillmentStatus,
+    total: parseFloat(node.totalPriceSet?.shopMoney?.amount || 0),
+    currency: node.totalPriceSet?.shopMoney?.currencyCode || 'TRY',
+    customer: node.customer
+      ? `${node.customer.firstName || ''} ${node.customer.lastName || ''}`.trim()
+      : (node.shippingAddress?.name || ''),
+    email: node.customer?.email || '',
+    phone: node.customer?.phone || '',
+    shippingCity: node.shippingAddress?.city || '',
+    shippingProvince: node.shippingAddress?.province || '',
+    // Metafields
+    billingType: getMF(node, 'zuber_checkout', 'billing_type'),
+    billingName: getMF(node, 'zuber_checkout', 'billing_name'),
+    billingProvince: getMF(node, 'zuber_checkout', 'billing_province'),
+    billingDistrict: getMF(node, 'zuber_checkout', 'billing_district'),
+    billingAddress: getMF(node, 'zuber_checkout', 'billing_address'),
+    billingNeighborhood: getMF(node, 'zuber_checkout', 'billing_neighborhood'),
+    billingCompanyName: getMF(node, 'zuber_checkout', 'billing_company_name'),
+    billingTaxOffice: getMF(node, 'zuber_checkout', 'billing_tax_office'),
+    billingTaxNumber: getMF(node, 'zuber_checkout', 'billing_tax_number'),
+    deliveryProvince: getMF(node, 'zuber_checkout', 'custom_app_province'),
+    deliveryDistrict: getMF(node, 'zuber_checkout', 'custom_app_district'),
+    deliveryNeighborhood: getMF(node, 'zuber_checkout', 'custom_app_neighborhood'),
+    personalAddress: getMF(node, 'zuber_checkout', 'personal_address'),
+    companyBillingStreetAddress: getMF(node, 'zuber_checkout', 'company_billing_street_address'),
+  };
+}
+
+// ---- FILTER ----
+function filterOrders() {
+  if (allOrders.length === 0) return;
+
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const payFilter = document.getElementById('payment-filter').value.toLowerCase();
+  const fulFilter = document.getElementById('fulfillment-filter').value.toLowerCase();
+
+  filteredOrders = allOrders.filter(o => {
+    // Payment filter
+    if (payFilter) {
+      const status = o.paymentStatus.toLowerCase();
+      if (payFilter === 'paid' && !status.includes('paid')) return false;
+      if (payFilter === 'pending' && !status.includes('pending')) return false;
+      if (payFilter === 'refunded' && !status.includes('refund')) return false;
+      if (payFilter === 'voided' && !status.includes('void')) return false;
+    }
+    // Fulfillment filter
+    if (fulFilter) {
+      const status = o.fulfillmentStatus.toLowerCase();
+      if (fulFilter === 'unfulfilled' && !status.includes('unfulfilled')) return false;
+      if (fulFilter === 'fulfilled' && status !== 'fulfilled') return false;
+      if (fulFilter === 'partial' && !status.includes('partial')) return false;
+    }
+    // Text search
+    if (!q) return true;
+    const searchable = [
+      o.name, o.customer, o.email, o.phone,
+      o.billingType, o.billingName, o.billingProvince, o.billingDistrict,
+      o.billingAddress, o.billingNeighborhood, o.billingCompanyName,
+      o.billingTaxOffice, o.billingTaxNumber,
+      o.deliveryProvince, o.deliveryDistrict, o.deliveryNeighborhood,
+      o.personalAddress, o.companyBillingStreetAddress,
+      o.shippingCity, o.shippingProvince,
+    ].join(' ').toLowerCase();
+    return searchable.includes(q);
+  });
+
+  currentPage = 1;
+  renderTable();
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('stat-shown').textContent = filteredOrders.length;
+  const total = filteredOrders.reduce((s, o) => s + o.total, 0);
+  document.getElementById('stat-amount').textContent =
+    total.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TRY';
+}
+
+// ---- RENDER ----
+function renderTable() {
+  const tbody = document.getElementById('orders-tbody');
+  const q = document.getElementById('search-input').value.trim();
+
+  if (filteredOrders.length === 0) {
+    document.getElementById('orders-table').style.display = 'none';
+    document.getElementById('pagination').style.display = 'none';
+    document.getElementById('table-state').style.display = 'block';
+    document.getElementById('table-state').innerHTML = `
+      <div class="state-icon">🔍</div>
+      <div class="state-title">Sonuç Bulunamadı</div>
+      <div class="state-msg">Arama kriterlerinize uygun sipariş yok.</div>
+    `;
+    document.getElementById('results-info').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('orders-table').style.display = 'table';
+  document.getElementById('table-state').style.display = 'none';
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const end = Math.min(start + PAGE_SIZE, filteredOrders.length);
+  const page = filteredOrders.slice(start, end);
+  const totalPages = Math.ceil(filteredOrders.length / PAGE_SIZE);
+
+  tbody.innerHTML = page.map(o => renderRow(o, q)).join('');
+
+  // Pagination
+  if (filteredOrders.length > PAGE_SIZE) {
+    document.getElementById('pagination').style.display = 'flex';
+    document.getElementById('page-info').textContent =
+      `${start + 1}–${end} / ${filteredOrders.length} sipariş (Sayfa ${currentPage}/${totalPages})`;
+    document.getElementById('prev-btn').disabled = currentPage <= 1;
+    document.getElementById('next-btn').disabled = currentPage >= totalPages;
+  } else {
+    document.getElementById('pagination').style.display = 'none';
+  }
+
+  // Results info
+  if (q) {
+    document.getElementById('results-info').style.display = 'block';
+    document.getElementById('results-info').textContent =
+      `"${q}" araması için ${filteredOrders.length} sonuç`;
+  } else {
+    document.getElementById('results-info').style.display = 'none';
+  }
+}
+
+function hl(text, q) {
+  if (!q || !text) return escHtml(text || '');
+  const escaped = escHtml(text);
+  const escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return escaped.replace(new RegExp(escapedQ, 'gi'), m => `<mark>${m}</mark>`);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderRow(o, q) {
+  const orderId = o.id.replace('gid://shopify/Order/', '');
+  const shopUrl = `https://${shopStore}/admin/orders/${orderId}`;
+  const date = new Date(o.createdAt).toLocaleDateString('tr-TR');
+
+  const payBadge = paymentBadge(o.paymentStatus);
+  const fulBadge = fulfillmentBadge(o.fulfillmentStatus);
+
+  const province = o.deliveryProvince || o.shippingProvince || '';
+  const district = o.deliveryDistrict || '';
+  const neighborhood = o.deliveryNeighborhood || '';
+
+  return `
+  <tr onclick="window.open('${shopUrl}', '_blank')">
+    <td class="td-order">${hl(o.name, q)}</td>
+    <td class="td-date">${date}</td>
+    <td>
+      <div class="td-customer">${hl(o.customer, q)}</div>
+      ${o.email ? `<div class="td-company">${hl(o.email, q)}</div>` : ''}
+    </td>
+    <td>
+      <div>${hl(o.billingCompanyName, q)}</div>
+      ${o.billingName ? `<div class="td-company">${hl(o.billingName, q)}</div>` : ''}
+    </td>
+    <td>
+      <div>${hl(o.billingTaxNumber, q)}</div>
+      ${o.billingTaxOffice ? `<div class="td-company">${hl(o.billingTaxOffice, q)}</div>` : ''}
+    </td>
+    <td><div class="loc-primary">${hl(province, q)}</div></td>
+    <td><div class="loc-primary">${hl(district, q)}</div></td>
+    <td><div class="loc-secondary">${hl(neighborhood, q)}</div></td>
+    <td><div class="loc-primary">${hl(o.billingProvince, q)}</div></td>
+    <td><div class="loc-primary">${hl(o.billingDistrict, q)}</div></td>
+    <td>${payBadge}</td>
+    <td>${fulBadge}</td>
+    <td class="td-amount">${o.total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ${o.currency}</td>
+  </tr>`;
+}
+
+function paymentBadge(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('paid')) return `<span class="badge badge-green">Ödendi</span>`;
+  if (s.includes('pending')) return `<span class="badge badge-yellow">Bekliyor</span>`;
+  if (s.includes('refund')) return `<span class="badge badge-red">İade</span>`;
+  if (s.includes('void')) return `<span class="badge badge-gray">İptal</span>`;
+  if (s.includes('expired') || s.includes('doldu')) return `<span class="badge badge-red">Süresi Doldu</span>`;
+  return `<span class="badge badge-gray">${escHtml(status)}</span>`;
+}
+
+function fulfillmentBadge(status) {
+  const s = (status || '').toLowerCase();
+  if (s === 'fulfilled') return `<span class="badge badge-green">Gönderildi</span>`;
+  if (s.includes('unfulfilled')) return `<span class="badge badge-orange">Gönderilmedi</span>`;
+  if (s.includes('partial')) return `<span class="badge badge-yellow">Kısmi</span>`;
+  if (s.includes('restocked')) return `<span class="badge badge-gray">İade</span>`;
+  return `<span class="badge badge-gray">${escHtml(status)}</span>`;
+}
+
+function changePage(dir) {
+  const totalPages = Math.ceil(filteredOrders.length / PAGE_SIZE);
+  currentPage = Math.max(1, Math.min(totalPages, currentPage + dir));
+  renderTable();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Pre-fill setup if token passed
+window.addEventListener('DOMContentLoaded', () => {
+  init();
+  // If already have credentials, pre-fill modal
+  if (shopStore) {
+    document.getElementById('modal-store').value = shopStore;
+    document.getElementById('modal-token').value = shopToken;
+  }
+});
+</script>
+</body>
+</html>
