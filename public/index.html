@@ -439,19 +439,9 @@
 <!-- SETUP SCREEN -->
 <div id="setup-screen">
   <div class="setup-card">
-    <h2>Bağlantı Ayarları</h2>
-    <p>Shopify mağaza bilgilerini girerek siparişlerinize erişin. Bilgiler tarayıcınızda şifreli olarak saklanır.</p>
-    <div class="field-group">
-      <label>Mağaza Adresi</label>
-      <input type="text" id="store-input" placeholder="magazaadi.myshopify.com" />
-      <div class="hint">Sadece subdomain kısmını girin</div>
-    </div>
-    <div class="field-group">
-      <label>Admin API Access Token</label>
-      <input type="password" id="token-input" placeholder="shpss_..." />
-      <div class="hint">Settings → Apps → Develop apps → token</div>
-    </div>
-    <button class="btn-primary" id="save-btn" onclick="saveSettings()">Bağlan ve Başla</button>
+    <h2>🔐 Shopify Yetkilendirmesi Gerekli</h2>
+    <p>Siparişlere erişmek için Shopify hesabınızla yetkilendirme yapmanız gerekiyor.</p>
+    <button class="btn-primary" onclick="window.location.href='/auth'">Shopify ile Bağlan</button>
   </div>
 </div>
 
@@ -578,32 +568,24 @@ let shopStore = '';
 let shopToken = '';
 
 // ---- INIT ----
-function init() {
-  const store = localStorage.getItem('zk_store');
-  const token = localStorage.getItem('zk_token');
-  if (store && token) {
-    shopStore = store;
-    shopToken = token;
-    document.getElementById('setup-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-  } else {
+async function init() {
+  try {
+    const res = await fetch('/auth/status');
+    const data = await res.json();
+    if (data.authenticated) {
+      document.getElementById('setup-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+    } else {
+      document.getElementById('setup-screen').style.display = 'block';
+      document.getElementById('main-app').style.display = 'none';
+    }
+  } catch(e) {
     document.getElementById('setup-screen').style.display = 'block';
     document.getElementById('main-app').style.display = 'none';
   }
 }
 
-function saveSettings() {
-  const store = document.getElementById('store-input').value.trim();
-  const token = document.getElementById('token-input').value.trim();
-  if (!store || !token) { alert('Lütfen tüm alanları doldurun.'); return; }
-  const cleanStore = store.replace(/https?:\/\//, '').replace(/\/$/, '');
-  localStorage.setItem('zk_store', cleanStore);
-  localStorage.setItem('zk_token', token);
-  shopStore = cleanStore;
-  shopToken = token;
-  document.getElementById('setup-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'block';
-}
+function saveSettings() {}
 
 function openSettings() {
   document.getElementById('modal-store').value = shopStore;
@@ -928,7 +910,7 @@ function escHtml(s) {
 
 function renderRow(o, q) {
   const orderId = o.id.replace('gid://shopify/Order/', '');
-  const shopUrl = `https://${shopStore}/admin/orders/${orderId}`;
+  const shopUrl = `https://zuber.myshopify.com/admin/orders/${orderId}`;
   const date = new Date(o.createdAt).toLocaleDateString('tr-TR');
 
   const payBadge = paymentBadge(o.paymentStatus);
